@@ -45,19 +45,30 @@ variable "region2" {
 }
 
 variable "vpc1_cldrouter_custom" {
-  description = "Custom BGP route advertisement configuration for the Cloud Router in VPC 1. If null, default route advertisement is used."
+  description = "Custom Cloud Router configuration for VPC 1 (BGP ASN and route advertisements). If null, defaults to ASN 64514 and default route advertisement."
   type = object({
-    all_subnets = bool
-    ip_ranges   = map(string)
+    asn              = optional(number, 64514)
+    all_subnets      = optional(bool)
+    ip_ranges        = optional(map(string))
+    custom_advertise = optional(object({
+      all_subnets = optional(bool, true)
+      ip_ranges   = optional(map(string), {})
+    }))
   })
   default = null
 }
 
 variable "vpc2_cldrouter_custom" {
-  description = "Custom BGP route advertisement configuration for the Cloud Router in VPC 2. If null, default route advertisement is used."
+  description = "Custom Cloud Router configuration for VPC 2 (BGP ASN and route advertisements). If null, defaults to ASN 64513 and default route advertisement."
   type = object({
-    all_subnets = bool
-    ip_ranges   = map(string)
+    asn              = optional(number, 64513)
+    all_subnets      = optional(bool)
+    ip_ranges        = optional(map(string))
+    custom_advertise = optional(object({
+      all_subnets = optional(bool, true)
+      ip_ranges   = optional(map(string), {})
+    }))
   })
   default = null
 }
+

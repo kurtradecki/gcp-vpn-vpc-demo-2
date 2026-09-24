@@ -35,18 +35,21 @@ region1 = "ADD 1ST REGION HERE"
 # region2 = "ADD 2ND REGION HERE"
 
 # --- Cloud Router BGP Configuration (Optional) ---
-# By default, Cloud Routers automatically advertise all VPC subnets (default mode).
-# Uncomment and configure below if you need custom route advertisements:
+# By default, Cloud Routers automatically use private ASN 64514 (VPC 1) and 64513 (VPC 2),
+# and advertise all VPC subnets (default mode).
+# Uncomment and configure below if you need custom ASN or route advertisements:
 #
 # vpc1_cldrouter_custom = {
-#   all_subnets = true # Set to false to advertise only custom ip_ranges
+#   asn         = 64514 # BGP ASN (Optional, defaults to 64514)
+#   all_subnets = true  # Set to false to advertise only custom ip_ranges
 #   ip_ranges = {
 #     "10.0.0.0/8" = "10 range" # Add CIDR ranges as needed: "CIDR" = "description"
 #   }
 # }
 #
 # vpc2_cldrouter_custom = {
-#   all_subnets = true # Set to false to advertise only custom ip_ranges
+#   asn         = 64513 # BGP ASN (Optional, defaults to 64513)
+#   all_subnets = true  # Set to false to advertise only custom ip_ranges
 #   ip_ranges = {
 #     "172.16.0.0/12"  = "172.16 range"
 #     "192.168.0.0/16" = "192.168 range"

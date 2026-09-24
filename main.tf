@@ -25,6 +25,26 @@ terraform {
 locals {
   project2_id = coalesce(var.project2_id, var.project1_id)
   region2     = coalesce(var.region2, var.region1)
+  vpc1_asn    = try(var.vpc1_cldrouter_custom.asn, null) != null ? var.vpc1_cldrouter_custom.asn : 64514
+  vpc2_asn    = try(var.vpc2_cldrouter_custom.asn, null) != null ? var.vpc2_cldrouter_custom.asn : 64513
+
+  vpc1_custom_advertise = (
+    try(var.vpc1_cldrouter_custom.custom_advertise, null) != null ? var.vpc1_cldrouter_custom.custom_advertise : (
+      try(var.vpc1_cldrouter_custom.all_subnets, null) != null || try(var.vpc1_cldrouter_custom.ip_ranges, null) != null ? {
+        all_subnets = coalesce(try(var.vpc1_cldrouter_custom.all_subnets, null), true)
+        ip_ranges   = coalesce(try(var.vpc1_cldrouter_custom.ip_ranges, null), {})
+      } : null
+    )
+  )
+
+  vpc2_custom_advertise = (
+    try(var.vpc2_cldrouter_custom.custom_advertise, null) != null ? var.vpc2_cldrouter_custom.custom_advertise : (
+      try(var.vpc2_cldrouter_custom.all_subnets, null) != null || try(var.vpc2_cldrouter_custom.ip_ranges, null) != null ? {
+        all_subnets = coalesce(try(var.vpc2_cldrouter_custom.all_subnets, null), true)
+        ip_ranges   = coalesce(try(var.vpc2_cldrouter_custom.ip_ranges, null), {})
+      } : null
+    )
+  )
 }
 
 data "google_compute_network" "vpc1" {
@@ -50,16 +70,16 @@ module "vpn-1" {
   }
 
   router_config = {
-    asn              = 64514
+    asn              = local.vpc1_asn
     name             = "cldrtr-${data.google_compute_network.vpc1.name}-${data.google_compute_network.vpc2.name}-${var.region1}-internal"
-    custom_advertise = var.vpc1_cldrouter_custom
+    custom_advertise = local.vpc1_custom_advertise
   }
 
   tunnels = {
     remote-0 = {
       bgp_peer = {
         address = "169.254.1.1"
-        asn     = 64513
+        asn     = local.vpc2_asn
       }
       bgp_session_range     = "169.254.1.2/30"
       vpn_gateway_interface = 0
@@ -67,7 +87,7 @@ module "vpn-1" {
     remote-1 = {
       bgp_peer = {
         address = "169.254.2.1"
-        asn     = 64513
+        asn     = local.vpc2_asn
       }
       bgp_session_range     = "169.254.2.2/30"
       vpn_gateway_interface = 1
@@ -88,16 +108,16 @@ module "vpn-2" {
   }
 
   router_config = {
-    asn              = 64513
+    asn              = local.vpc2_asn
     name             = "cldrtr-${data.google_compute_network.vpc2.name}-${data.google_compute_network.vpc1.name}-${local.region2}-internal"
-    custom_advertise = var.vpc2_cldrouter_custom
+    custom_advertise = local.vpc2_custom_advertise
   }
 
   tunnels = {
     remote-0 = {
       bgp_peer = {
         address = "169.254.1.2"
-        asn     = 64514
+        asn     = local.vpc1_asn
       }
       bgp_session_range     = "169.254.1.1/30"
       shared_secret         = module.vpn-1.random_secret
@@ -106,7 +126,7 @@ module "vpn-2" {
     remote-1 = {
       bgp_peer = {
         address = "169.254.2.2"
-        asn     = 64514
+        asn     = local.vpc1_asn
       }
       bgp_session_range     = "169.254.2.1/30"
       shared_secret         = module.vpn-1.random_secret
