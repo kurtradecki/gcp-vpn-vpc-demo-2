@@ -12,7 +12,7 @@
 1. Clone the this repo
 
 ```sh
-git clone https://github.com/kurtradecki/gcp-vpn-vpc-demo.git
+git clone https://github.com/kurtradecki/gcp-vpn-vpc-demo-2.git
 ```
 
 2. Ensure you have an active GCP account selected to run gcloud commands with [gcloud CLI](https://cloud.google.com/sdk/docs/install) (not needed in Cloud Shell).
